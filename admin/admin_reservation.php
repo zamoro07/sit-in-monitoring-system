@@ -285,6 +285,7 @@ if (isset($_SESSION['toast'])) {
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <title>Reservation/Approval</title>
     <script>
         tailwind.config = {
@@ -292,20 +293,46 @@ if (isset($_SESSION['toast'])) {
                 extend: {
                     fontFamily: {
                         'poppins': ['Poppins', 'sans-serif']
-                    },
+                    }
                 }
             }
         }
     </script>
     <style>
-        .gradient-text {
-            background: linear-gradient(to right, #2563eb, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            display: inline-block;
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: white;
+            transition: background-color 0.3s ease;
         }
-        
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #333;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
         .colored-toast.swal2-icon-success {
             background-color: #10B981 !important;
         }
@@ -318,160 +345,86 @@ if (isset($_SESSION['toast'])) {
     </style>
 </head>
 <body class="min-h-screen font-poppins" style="background: white">
-    <!-- Header -->
-    <div class="text-center text-white font-bold text-2xl py-4 relative shadow-lg" style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
-        CCS SIT-IN MONITORING SYSTEM
-        <div class="absolute top-4 left-6 cursor-pointer" onclick="toggleNav(this)">
-            <div class="bar1 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-            <div class="bar2 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-            <div class="bar3 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-        </div>
-    </div>
-
-    <!-- Side Navigation -->
-    <div id="mySidenav" class="fixed top-0 left-0 h-screen w-72 bg-gradient-to-b from-blue-600 to-blue-800 transform -translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-xl overflow-y-auto">
-        <div class="absolute top-0 right-0 m-3">
-            <button onclick="closeNav()" class="text-white hover:text-pink-200 transition-colors">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        
-        <div class="flex flex-col items-center mt-6">
-            <div class="relative">
-                <img src="../images/image.jpg" alt="Logo" class="w-20 h-20 rounded-full border-4 border-white/30 object-cover shadow-lg">
-                <div class="absolute bottom-0 right-0 bg-green-500 w-3 h-3 rounded-full border-2 border-white"></div>
+    <div class="bg-gradient-to-r from-[#4066E0] to-[#4D6AFF] text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center space-x-4">
+                    <img src="../logo/ccs.png" alt="Logo" class="w-10 h-10">
+                    <h1 class="font-bold text-xl">CCS SIT-IN MONITORING SYSTEM</h1>
+                </div>
+                <nav class="flex items-center space-x-6">
+                    <a href="admin_dashboard.php" class="nav-item">
+                        <i class="ri-home-line"></i>
+                        <span>Home</span>
+                    </a>
+                    <a href="admin_search.php" class="nav-item">
+                        <i class="ri-search-line"></i>
+                        <span>Search</span>
+                    </a>
+                    <a href="admin_sitin.php" class="nav-item">
+                        <i class="ri-user-follow-line"></i>
+                        <span>Sit-in</span>
+                    </a>
+                    <div class="relative group">
+                        <button class="nav-item">
+                            <i class="ri-eye-line"></i>
+                            <span>View</span>
+                            <i class="ri-arrow-down-s-line"></i>
+                        </button>
+                        <div class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 hidden group-hover:block">
+                            <a href="admin_sitinrec.php" class="dropdown-item">
+                                <i class="ri-file-list-line mr-2"></i>Sit-in Records
+                            </a>
+                            <a href="admin_studlist.php" class="dropdown-item">
+                                <i class="ri-list-check mr-2"></i>List of Students
+                            </a>
+                            <a href="admin_feedback.php" class="dropdown-item">
+                                <i class="ri-message-3-line mr-2"></i>Feedbacks
+                            </a>
+                        </div>
+                    </div>
+                    <div class="relative group">
+                        <button class="nav-item">
+                            <i class="ri-computer-line"></i>
+                            <span>Lab</span>
+                            <i class="ri-arrow-down-s-line"></i>
+                        </button>
+                        <div class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 hidden group-hover:block">
+                            <a href="admin_resources.php" class="dropdown-item">
+                                <i class="fas fa-box-open mr-2"></i>Resources
+                            </a>
+                            <a href="admin_lab_schedule.php" class="dropdown-item">
+                                <i class="fas fa-calendar-alt mr-2"></i>Lab Schedule
+                            </a>
+                            <a href="admin_lab_usage.php" class="dropdown-item">
+                                <i class="fas fa-chart-bar mr-2"></i>Lab Usage Point
+                            </a>
+                        </div>
+                    </div>
+                    <a href="admin_reports.php" class="nav-item">
+                        <i class="ri-line-chart-line"></i>
+                        <span>Reports</span>
+                    </a>
+                    <a href="admin_reservation.php" class="nav-item active">
+                        <i class="ri-calendar-check-line"></i>
+                        <span>Reservation</span>
+                    </a>
+                    <a href="../logout.php" class="nav-item hover:bg-red-500/20">
+                        <i class="ri-logout-box-r-line"></i>
+                        <span>Logout</span>
+                    </a>
+                </nav>
             </div>
-            <p class="text-white font-semibold text-lg mt-2 mb-0">Admin</p>
-            <p class="text-purple-200 text-xs mb-3">Administrator</p>
-        </div>
-
-        <div class="px-2 py-2">
-            <nav class="flex flex-col space-y-1">
-                <a href="admin_dashboard.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-home w-5 mr-2 text-center"></i>
-                    <span class="font-medium">HOME</span>
-                </a>
-                <a href="admin_search.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-search w-5 mr-2 text-center"></i>
-                    <span class="font-medium">SEARCH</span>
-                </a>
-                <a href="admin_sitin.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-user-check w-5 mr-2 text-center"></i>
-                    <span class="font-medium">SIT-IN</span>
-                </a>
-                
-                <!-- VIEW Dropdown -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="w-full group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="fas fa-eye w-5 mr-2 text-center"></i>
-                            <span class="font-medium">VIEW</span>
-                        </div>
-                        <i class="fas fa-chevron-down transition-transform" :class="{ 'transform rotate-180': open }"></i>
-                    </button>
-                    
-                    <div x-show="open" 
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 transform -translate-y-2"
-                        x-transition:enter-end="opacity-100 transform translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 transform translate-y-0"
-                        x-transition:leave-end="opacity-0 transform -translate-y-2"
-                        class="pl-7 mt-2 space-y-1">
-                        
-                        <a href="admin_sitinrec.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-book w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Sit-in Records</span>
-                        </a>
-                        
-                        <a href="admin_studlist.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-list w-5 mr-2 text-center"></i>
-                            <span class="font-medium">List of Students</span>
-                        </a>
-                        
-                        <a href="admin_feedback.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-comments w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Feedbacks</span>
-                        </a>
-                        
-                        <a href="#" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-chart-pie w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Daily Analytics</span>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="w-full group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="fas fa-desktop w-5 mr-2 text-center"></i>
-                            <span class="font-medium">LAB</span>
-                        </div>
-                        <i class="fas fa-chevron-down transition-transform" :class="{ 'transform rotate-180': open }"></i>
-                    </button>
-                    
-                    <div x-show="open" 
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 transform -translate-y-2"
-                        x-transition:enter-end="opacity-100 transform translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 transform translate-y-0"
-                        x-transition:leave-end="opacity-0 transform -translate-y-2"
-                        class="pl-7 mt-2 space-y-1">
-                        
-                        <a href="admin_resources.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-box-open w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Resources</span>
-                        </a>
-                        
-                        <a href="admin_lab_schedule.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-calendar-alt w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Lab Schedule</span>
-                        </a>
-                        
-                        <a href="admin_lab_usage.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-chart-bar w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Lab Usage Point</span>
-                        </a>
-                    </div>
-                </div>
-                <a href="admin_reports.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-chart-line w-5 mr-2 text-center"></i>
-                    <span class="font-medium">SIT-IN REPORT</span>
-                </a>
-
-                <a href="admin_reservation.php" class="group px-3 py-2 text-white/90 bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-calendar-check w-5 mr-2 text-center"></i>
-                    <span class="font-medium">RESERVATION/APPROVAL</span>
-                </a>
-                
-                <div class="border-t border-white/10 my-2"></div>
-                
-                <a href="../logout.php" class="group px-3 py-2 text-white/90 hover:bg-red-500/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-sign-out-alt w-5 mr-2 text-center"></i>
-                    <span class="font-medium group-hover:translate-x-1 transition-transform">LOG OUT</span>
-                </a>
-            </nav>
         </div>
     </div>
-
-    <!-- Main Content Container -->
     <div class="container mx-auto px-6 py-8">
-        <!-- Main Grid Layout -->
         <div class="flex flex-col gap-6">
-            <!-- Top Row - Controls and Request -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Computer Controls Card -->
                 <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
                     <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" 
-                         style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
-                        <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                        <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-                        <i class="fas fa-desktop text-2xl mr-4 relative z-10"></i>
-                        <h2 class="text-xl font-bold tracking-wider uppercase relative z-10">Computer Controls</h2>
+                         style="background: linear-gradient(135deg, #4066E0 0%, #4D6AFF 100%)">
+                        <h2 class="text-xl font-bold tracking-wider uppercase">Computer Controls</h2>
                     </div>
-                    
-                    <!-- Lab Selection -->
                     <div class="p-6">
                         <div class="mb-6">
                             <div class="relative">
@@ -489,17 +442,13 @@ if (isset($_SESSION['toast'])) {
                                     <i class="fas fa-chevron-down text-gray-400"></i>
                                 </div>
                             </div>
-                            
-                            <!-- Filter Button -->
-                            <button class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50 shadow-lg">
-                                <i class="fas fa-filter mr-2"></i> FILTER
+                            <button class="w-full mt-4 bg-gradient-to-r from-[#4066E0] to-[#4D6AFF] hover:from-[#3055CF] hover:to-[#3C59EE] text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#4066E0] focus:ring-opacity-50 shadow-lg">
+                                FILTER
                             </button>
                         </div>
-                        
-                        <!-- PC List with Grid Layout -->
                         <div class="bg-white/80 rounded-xl p-4 shadow-inner max-h-[400px] overflow-y-auto">
                             <div id="pc_message" class="text-center py-6 text-gray-500">
-                                Click FILTER to view computers for the selected laboratory
+                                Click FILTER 
                             </div>
                             <div id="pc_grid" class="hidden grid grid-cols-5 gap-2">
                                 <?php for($i = 1; $i <= 50; $i++): ?>
@@ -518,31 +467,22 @@ if (isset($_SESSION['toast'])) {
                                 <?php endfor; ?>
                             </div>
                         </div>
-
-                        <!-- Action Buttons -->
                         <div class="grid grid-cols-2 gap-4 mt-6">
-                            <button onclick="setStatus('available')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300">
+                            <button onclick="setStatus('available')" class="bg-gradient-to-r from-[#4066E0] to-[#4D6AFF] hover:from-[#3055CF] hover:to-[#3C59EE] text-white font-medium py-3 px-6 rounded-xl transition-all duration-300">
                                 <i class="fas fa-check-circle mr-2"></i> Available
                             </button>
-                            <button onclick="setStatus('used')" class="bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300">
+                            <button onclick="setStatus('used')" class="bg-gradient-to-r from-[#4066E0] to-[#4D6AFF] hover:from-[#3055CF] hover:to-[#3C59EE] text-white font-medium py-3 px-6 rounded-xl transition-all duration-300">
                                 <i class="fas fa-times-circle mr-2"></i> Used
                             </button>
                         </div>
                     </div>
                 </div>
-
-                <!-- Reservation Request Card -->
                 <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
                     <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" 
-                         style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
-                        <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                        <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-                        <i class="fas fa-clipboard-check text-2xl mr-4 relative z-10"></i>
-                        <h2 class="text-xl font-bold tracking-wider uppercase relative z-10">Reservation Request</h2>
+                         style="background: linear-gradient(135deg, #4066E0 0%, #4D6AFF 100%)">
+                        <h2 class="text-xl font-bold tracking-wider uppercase">Reservation Request</h2>
                     </div>
-                    
                     <div class="p-6">
-                        <!-- Scrollable Request List -->
                         <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                             <?php if ($reservations->num_rows > 0): ?>
                                 <?php while ($row = $reservations->fetch_assoc()): ?>
@@ -587,14 +527,14 @@ if (isset($_SESSION['toast'])) {
                                                 <form method="POST" class="flex-1">
                                                     <input type="hidden" name="reservation_id" value="<?php echo $row['ID']; ?>">
                                                     <input type="hidden" name="action" value="approve">
-                                                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">
+                                                    <button type="submit" class="w-full bg-gradient-to-r from-[#4066E0] to-[#4D6AFF] hover:from-[#3055CF] hover:to-[#3C59EE] text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">
                                                         <i class="fas fa-check mr-2"></i> Approve
                                                     </button>
                                                 </form>
                                                 <form method="POST" class="flex-1">
                                                     <input type="hidden" name="reservation_id" value="<?php echo $row['ID']; ?>">
                                                     <input type="hidden" name="action" value="disapprove">
-                                                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">
+                                                    <button type="submit" class="w-full bg-gradient-to-r from-[#4066E0] to-[#4D6AFF] hover:from-[#3055CF] hover:to-[#3C59EE] text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">
                                                         <i class="fas fa-times mr-2"></i> Disapprove
                                                     </button>
                                                 </form>
@@ -611,19 +551,12 @@ if (isset($_SESSION['toast'])) {
                     </div>
                 </div>
             </div>
-
-            <!-- Bottom Row - Logs -->
             <div class="w-full">
-                <!-- Logs Card -->
                 <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
                     <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" 
-                         style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
-                        <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                        <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-                        <i class="fas fa-history text-2xl mr-4 relative z-10"></i>
-                        <h2 class="text-xl font-bold tracking-wider uppercase relative z-10">Logs</h2>
+                         style="background: linear-gradient(135deg, #4066E0 0%, #4D6AFF 100%)">
+                        <h2 class="text-xl font-bold tracking-wider uppercase">Logs</h2>
                     </div>
-                    
                     <div class="p-6">
                         <div class="overflow-y-auto max-h-[600px] bg-white/80 rounded-xl shadow-inner">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -660,9 +593,6 @@ if (isset($_SESSION['toast'])) {
             </div>
         </div>
     </div>
-
-   
-
     <script>
         function toggleNav(x) {
             document.getElementById("mySidenav").classList.toggle("-translate-x-0");
@@ -674,11 +604,9 @@ if (isset($_SESSION['toast'])) {
             document.getElementById("mySidenav").classList.add("-translate-x-full");
         }
 
-        // Function to handle PC selection
         let selectedPCs = new Set();
         let labStatuses = {};
 
-        // Load all PC statuses when page loads
         function loadAllLabStatuses() {
             fetch('admin_reservation.php?get_all_pc_status')
             .then(response => response.json())
@@ -687,7 +615,6 @@ if (isset($_SESSION['toast'])) {
             });
         }
 
-        // Call this when page loads
         document.addEventListener('DOMContentLoaded', loadAllLabStatuses);
 
         function showPCs() {
@@ -697,16 +624,11 @@ if (isset($_SESSION['toast'])) {
                 return;
             }
 
-            // Reset only selection states
             selectedPCs.clear();
             document.querySelectorAll('.pc-card').forEach(card => {
                 card.classList.remove('selected', 'ring-2', 'ring-purple-500', 'bg-purple-50');
-                
-                // Set all PCs as available by default
                 card.style.backgroundColor = '#dcfce7';
                 card.style.borderColor = '#22c55e';
-                
-                // Add available label
                 const pcNum = card.getAttribute('data-pc');
                 const statusDiv = card.querySelector('.status-label') || document.createElement('div');
                 statusDiv.className = 'mt-1 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full status-label';
@@ -716,17 +638,13 @@ if (isset($_SESSION['toast'])) {
                 }
             });
 
-            // Show the grid
             document.getElementById('pc_message').classList.add('hidden');
             document.getElementById('pc_grid').classList.remove('hidden');
             
-            // Load this lab's status from database to override defaults
             fetch(`admin_reservation.php?lab=${lab}`)
             .then(response => response.json())
             .then(data => {
                 labStatuses[lab] = data;
-                
-                // Apply any existing statuses from database
                 document.querySelectorAll('.pc-card').forEach(card => {
                     const pcNum = card.getAttribute('data-pc');
                     if (labStatuses[lab] && labStatuses[lab][pcNum] === 'used') {
@@ -754,12 +672,10 @@ if (isset($_SESSION['toast'])) {
                 return;
             }
 
-            // Initialize lab status if not exists
             if (!labStatuses[lab]) {
                 labStatuses[lab] = {};
             }
             
-            // Send update to server
             fetch('admin_reservation.php', {
                 method: 'POST',
                 headers: {
@@ -768,7 +684,6 @@ if (isset($_SESSION['toast'])) {
                 body: `pc_action=1&pc_list=${JSON.stringify(Array.from(selectedPCs))}&status=${status}&laboratory=${lab}`
             })
             .then(response => {
-                // Update local storage and display
                 selectedPCs.forEach(pcNum => {
                     labStatuses[lab][pcNum] = status;
                     const pcCard = document.querySelector(`[data-pc="${pcNum}"]`);
@@ -791,7 +706,6 @@ if (isset($_SESSION['toast'])) {
                     }
                 });
 
-                // Clear selections
                 selectedPCs.clear();
                 document.querySelectorAll('.pc-card.selected').forEach(card => {
                     card.classList.remove('selected', 'ring-2', 'ring-purple-500', 'bg-purple-50');
@@ -799,10 +713,8 @@ if (isset($_SESSION['toast'])) {
             });
         }
 
-        // Remove the updatePCDisplay function since we're handling updates directly in setStatus
         document.querySelector('.w-full.mt-4').addEventListener('click', showPCs);
 
-        // Remove the lab change event listener since we only want updates on filter click
         document.getElementById('labSelect').removeEventListener('change', updatePCDisplay);
 
         function togglePC(pcNumber) {
@@ -823,7 +735,6 @@ if (isset($_SESSION['toast'])) {
             }
         }
 
-        // Add click event listeners to all PC cards
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.pc-card').forEach(card => {
                 card.addEventListener('click', function() {

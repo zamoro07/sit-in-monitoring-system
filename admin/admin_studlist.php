@@ -79,10 +79,7 @@ $result = mysqli_query($conn, $query);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="../logo/ccs.png" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Add SweetAlert CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Add Remixicon CDN -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <title>Admin Student List</title>
     <script>
@@ -97,7 +94,7 @@ $result = mysqli_query($conn, $query);
         }
     </script>
     <style>
-        /* Add gradient text class for the footer */
+        /* Existing styles */
         .gradient-text {
             background: linear-gradient(to right, #2563eb, #3b82f6);
             -webkit-background-clip: text;
@@ -115,134 +112,126 @@ $result = mysqli_query($conn, $query);
         .colored-toast {
             color: #fff !important;
         }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #333;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
     </style>
-</head>   
+</head>
 <body class="min-h-screen font-poppins" style="background: white">
-    <!-- Header -->
-    <div class="text-center text-white font-bold text-2xl py-4 relative shadow-lg" style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
-        CCS SIT-IN MONITORING SYSTEM
-        <div class="absolute top-4 left-6 cursor-pointer" onclick="toggleNav(this)">
-            <div class="bar1 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-            <div class="bar2 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-            <div class="bar3 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-        </div>
-    </div>
+    <!-- New Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <!-- Left - System Title with Logo -->
+                <div class="flex items-center space-x-4">
+                    <img src="../logo/ccs.png" alt="Logo" class="w-10 h-10">
+                    <h1 class="font-bold text-xl">CCS SIT-IN MONITORING SYSTEM</h1>
+                </div>
 
-    <!-- Side Navigation -->
-    <div id="mySidenav" class="fixed top-0 left-0 h-screen w-72 bg-gradient-to-b from-blue-600 to-blue-800 transform -translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-xl overflow-y-auto">
-        <div class="absolute top-0 right-0 m-3">
-            <button onclick="closeNav()" class="text-white hover:text-pink-200 transition-colors">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        
-        <div class="flex flex-col items-center mt-6">
-            <div class="relative">
-                <img src="../images/image.jpg" alt="Logo" class="w-20 h-20 rounded-full border-4 border-white/30 object-cover shadow-lg">
-                <div class="absolute bottom-0 right-0 bg-green-500 w-3 h-3 rounded-full border-2 border-white"></div>
+                <!-- Center/Right - Navigation Menu -->
+                <nav class="flex items-center space-x-6">
+                    <a href="admin_dashboard.php" class="nav-item">
+                        <i class="ri-home-line"></i>
+                        <span>Home</span>
+                    </a>
+                    
+                    <a href="admin_search.php" class="nav-item">
+                        <i class="ri-search-line"></i>
+                        <span>Search</span>
+                    </a>
+                    
+                    <a href="admin_sitin.php" class="nav-item">
+                        <i class="ri-user-follow-line"></i>
+                        <span>Sit-in</span>
+                    </a>
+
+                    <!-- View Dropdown -->
+                    <div class="relative group">
+                        <button class="nav-item active">
+                            <i class="ri-eye-line"></i>
+                            <span>View</span>
+                            <i class="ri-arrow-down-s-line"></i>
+                        </button>
+                        <div class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 hidden group-hover:block">
+                            <a href="admin_sitinrec.php" class="dropdown-item">
+                                <i class="ri-file-list-line mr-2"></i>Sit-in Records
+                            </a>
+                            <a href="admin_studlist.php" class="dropdown-item">
+                                <i class="ri-list-check mr-2"></i>List of Students
+                            </a>
+                            <a href="admin_feedback.php" class="dropdown-item">
+                                <i class="ri-message-3-line mr-2"></i>Feedbacks
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Lab Dropdown -->
+                    <div class="relative group">
+                        <button class="nav-item">
+                            <i class="ri-computer-line"></i>
+                            <span>Lab</span>
+                            <i class="ri-arrow-down-s-line"></i>
+                        </button>
+                        <div class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 hidden group-hover:block">
+                            <a href="admin_resources.php" class="dropdown-item">
+                                <i class="fas fa-box-open mr-2"></i>Resources
+                            </a>
+                            <a href="admin_lab_schedule.php" class="dropdown-item">
+                                <i class="fas fa-calendar-alt mr-2"></i>Lab Schedule
+                            </a>
+                            <a href="admin_lab_usage.php" class="dropdown-item">
+                                <i class="fas fa-chart-bar mr-2"></i>Lab Usage Point
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="admin_reports.php" class="nav-item">
+                        <i class="ri-line-chart-line"></i>
+                        <span>Reports</span>
+                    </a>
+
+                    <a href="admin_reservation.php" class="nav-item">
+                        <i class="ri-calendar-check-line"></i>
+                        <span>Reservation</span>
+                    </a>
+
+                    <a href="../logout.php" class="nav-item hover:bg-red-500/20">
+                        <i class="ri-logout-box-r-line"></i>
+                        <span>Logout</span>
+                    </a>
+                </nav>
             </div>
-            <p class="text-white font-semibold text-lg mt-2 mb-0">Admin</p>
-            <p class="text-purple-200 text-xs mb-3">Administrator</p>
-        </div>
-
-        <div class="px-2 py-2">
-            <nav class="flex flex-col space-y-1">
-                <a href="admin_dashboard.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-home w-5 mr-2 text-center"></i>
-                    <span class="font-medium">HOME</span>
-                </a>
-                <a href="admin_search.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-search w-5 mr-2 text-center"></i>
-                    <span class="font-medium">SEARCH</span>
-                </a>
-                <a href="admin_sitin.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-user-check w-5 mr-2 text-center"></i>
-                    <span class="font-medium">SIT-IN</span>
-                </a>
-                
-                <!-- VIEW Dropdown -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="w-full group px-3 py-2 text-white/90 bg-white/10 rounded-lg transition-all duration-200 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="fas fa-eye w-5 mr-2 text-center"></i>
-                            <span class="font-medium">VIEW</span>
-                        </div>
-                        <i class="fas fa-chevron-down transition-transform" :class="{ 'transform rotate-180': open }"></i>
-                    </button>
-                    
-                    <div x-show="open" class="pl-7 mt-2 space-y-1">
-                        <a href="admin_sitinrec.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-book w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Sit-in Records</span>
-                        </a>
-                        <a href="admin_studlist.php" class="group px-3 py-2 text-white/90 bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-list w-5 mr-2 text-center"></i>
-                            <span class="font-medium">List of Students</span>
-                        </a>
-                        <a href="admin_feedback.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-comments w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Feedbacks</span>
-                        </a>
-                        <a href="#" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-chart-pie w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Daily Analytics</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- LAB Dropdown -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="w-full group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="fas fa-desktop w-5 mr-2 text-center"></i>
-                            <span class="font-medium">LAB</span>
-                        </div>
-                        <i class="fas fa-chevron-down transition-transform" :class="{ 'transform rotate-180': open }"></i>
-                    </button>
-                    
-                    <div x-show="open" 
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 transform -translate-y-2"
-                        x-transition:enter-end="opacity-100 transform translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 transform translate-y-0"
-                        x-transition:leave-end="opacity-0 transform -translate-y-2"
-                        class="pl-7 mt-2 space-y-1">
-                        
-                        <a href="admin_resources.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-box-open w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Resources</span>
-                        </a>
-                        
-                        <a href="admin_lab_schedule.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-calendar-alt w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Lab Schedule</span>
-                        </a>
-                        
-                        <a href="admin_lab_usage.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-chart-bar w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Lab Usage Point</span>
-                        </a>
-                    </div>
-                </div>
-
-                <a href="admin_reports.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-chart-line w-5 mr-2 text-center"></i>
-                    <span class="font-medium">SIT-IN REPORT</span>
-                </a>
-
-                <a href="admin_reservation.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-calendar-check w-5 mr-2 text-center"></i>
-                    <span class="font-medium">RESERVATION/APPROVAL</span>
-                </a>
-                
-                <div class="border-t border-white/10 my-2"></div>
-                
-                <a href="../logout.php" class="group px-3 py-2 text-white/90 hover:bg-red-500/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-sign-out-alt w-5 mr-2 text-center"></i>
-                    <span class="font-medium group-hover:translate-x-1 transition-transform">LOG OUT</span>
-                </a>
-            </nav>
         </div>
     </div>
 

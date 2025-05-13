@@ -17,7 +17,7 @@ if ($userId) {
     $stmt->bind_result($userImage);
     $stmt->fetch();
     $stmt->close();
-    
+
     $profileImage = !empty($userImage) ? '../images/' . $userImage : "../images/image.jpg";
 } else {
     $profileImage = "../images/image.jpg";
@@ -59,7 +59,7 @@ if ($fetchResult && $fetchResult->num_rows > 0) {
     <link rel="icon" href="../logo/ccs.png" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="../css/admin_styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Lab Resources</title>
     <script>
         tailwind.config = {
@@ -73,133 +73,181 @@ if ($fetchResult && $fetchResult->num_rows > 0) {
         }
     </script>
     <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #ffffff !important;
+            min-height: 100vh;
+        }
+        /* Student Info Section - add solid black border */
+        .w-11\/12 {
+            border: 2px solid #000000 !important;
+        }
+        /* Keep existing hover-row styles */
+        .hover-row {
+            border-left: 4px solid #2563eb !important;
+        }
         /* Add gradient text class for the footer */
         .gradient-text {
-            background: linear-gradient(to right, #2563eb, #3b82f6);
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             display: inline-block;
         }
-        
+        /* New hover effect for table rows */
+        .hover-row:hover {
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: translateX(4px);
+            transition: all 0.3s ease;
+        }
+        .hover-row {
+            border-left: 4px solid #2563eb !important;
+        }
+        .border-indigo-400 {
+            border-color: #2563eb !important;
+        }
+        .border-purple-400 {
+            border-color: #2563eb !important;
+        }
+        .text-indigo-400 {
+            color: #2563eb !important;
+        }
+        .text-purple-400 {
+            color: #2563eb !important;
+        }
+        /* Header nav items */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .nav-item i {
+            width: 1.25rem;
+            text-align: center;
+            margin-right: 0.75rem;
+        }
+        /* Mobile menu styles */
+        @media (max-width: 768px) {
+            .nav-item span {
+                display: none;
+            }
+            .nav-item i {
+                margin-right: 0;
+            }
+        }
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            header .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
         /* Custom scrollbar for content */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
-        
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
-        
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: linear-gradient(to bottom, #2563eb, #3b82f6);
             border-radius: 10px;
         }
-        
         /* Update button gradients */
         .btn-gradient {
             background: linear-gradient(to bottom right, #2563eb, #3b82f6);
         }
-        
         /* Update resource cards gradient borders */
         .gradient-border {
             background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
         }
     </style>
 </head>
-<body class="min-h-screen font-poppins" style="background: white">
+<body class="bg-gradient-to-br min-h-screen font-poppins" style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
     <!-- Header -->
-    <div class="text-center text-white font-bold text-2xl py-4 relative shadow-lg" 
-         style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
-        CCS SIT-IN MONITORING SYSTEM
-        <div class="absolute top-4 left-6 cursor-pointer" onclick="toggleNav(this)">
-            <div class="bar1 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-            <div class="bar2 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-            <div class="bar3 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-        </div>
-    </div>
-
-    <!-- Side Navigation -->
-    <div id="mySidenav" class="fixed top-0 left-0 h-screen w-72 bg-gradient-to-b from-blue-600 to-blue-800 transform -translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-xl overflow-y-auto">
-        <div class="absolute top-0 right-0 m-3">
-            <button onclick="closeNav()" class="text-white hover:text-pink-200 transition-colors">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        
-        <div class="flex flex-col items-center mt-6">
-            <div class="relative">
-                <img src="<?php echo htmlspecialchars($profileImage); ?>" alt="Profile" class="w-20 h-20 rounded-full border-4 border-white/30 object-cover shadow-lg">
-                <div class="absolute bottom-0 right-0 bg-green-500 w-3 h-3 rounded-full border-2 border-white"></div>
+    <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg py-4 px-6">
+        <div class="container mx-auto flex items-center justify-between">
+            <!-- Logo/Title Section -->
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold">CCS SIT-IN MONITORING SYSTEM</h1>
             </div>
-            <p class="text-white font-semibold text-lg mt-2 mb-0"><?php echo htmlspecialchars($firstName); ?></p>
-            <p class="text-purple-200 text-xs mb-3">Student</p>
-        </div>
-
-        <div class="px-2 py-2">
-            <nav class="flex flex-col space-y-1">
-                <a href="dashboard.php" class="group px-3 py-2 text-white/90 hover:bg-blue-600 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-home w-5 mr-2 text-center"></i>
-                    <span class="font-medium">HOME</span>
-                </a>
-                <a href="profile.php" class="group px-3 py-2 text-white/90 hover:bg-blue-600 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-user w-5 mr-2 text-center"></i>
-                    <span class="font-medium">PROFILE</span>
-                </a>
-                <a href="edit.php" class="group px-3 py-2 text-white/90 hover:bg-blue-600 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-edit w-5 mr-2 text-center"></i>
-                    <span class="font-medium">EDIT</span>
-                </a>
-                <a href="history.php" class="group px-3 py-2 text-white/90 hover:bg-blue-600 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-history w-5 mr-2 text-center"></i>
-                    <span class="font-medium">HISTORY</span>
-                </a>
-                
-                <!-- VIEW Dropdown -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="w-full group px-3 py-2 text-white/90 bg-white/20 rounded-lg transition-all duration-200 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="fas fa-eye w-5 mr-2 text-center"></i>
-                            <span class="font-medium">VIEW</span>
+            <!-- Navigation Items -->
+            <div class="flex items-center space-x-6">
+                <!-- Nav Links -->
+                <nav class="hidden md:flex items-center space-x-4">
+                    <a href="dashboard.php" class="nav-item<?php if(basename($_SERVER['PHP_SELF']) == 'dashboard.php') echo ' active'; ?>">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                    <a href="profile.php" class="nav-item<?php if(basename($_SERVER['PHP_SELF']) == 'profile.php') echo ' active'; ?>">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                    <a href="edit.php" class="nav-item<?php if(basename($_SERVER['PHP_SELF']) == 'edit.php') echo ' active'; ?>">
+                        <i class="fas fa-edit"></i>
+                        <span>Edit</span>
+                    </a>
+                    <a href="history.php" class="nav-item<?php if(basename($_SERVER['PHP_SELF']) == 'history.php') echo ' active'; ?>">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </a>
+                    <!-- View Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="nav-item">
+                            <i class="fas fa-eye"></i>
+                            <span>View</span>
+                            <i class="fas fa-chevron-down ml-1 text-sm"></i>
+                        </button>
+                        <div x-show="open" 
+                             @click.outside="open = false"
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50">
+                            <a href="lab_resources.php" class="block px-4 py-2 text-gray-800 hover:bg-blue-50">
+                                <i class="fas fa-desktop mr-2"></i>Lab Resource
+                            </a>
+                            <a href="lab_schedule.php" class="block px-4 py-2 text-gray-800 hover:bg-blue-50">
+                                <i class="fas fa-calendar-week mr-2"></i>Lab Schedule
+                            </a>
                         </div>
-                        <i class="fas fa-chevron-down transition-transform" :class="{ 'transform rotate-180': open }"></i>
-                    </button>
-                    
-                    <div x-show="open" 
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 transform -translate-y-2"
-                        x-transition:enter-end="opacity-100 transform translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 transform translate-y-0"
-                        x-transition:leave-end="opacity-0 transform -translate-y-2"
-                        class="pl-7 mt-2 space-y-1">
-                        
-                        <a href="lab_resources.php" class="group px-3 py-2 text-white/90 bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-desktop w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Lab Resources</span>
-                        </a>
-                        
-                        <a href="lab_schedule.php" class="group px-3 py-2 text-white/90 hover:bg-blue-600 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-calendar-week w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Lab Schedule</span>
-                        </a>
                     </div>
-                </div>
-
-                <a href="reservation.php" class="group px-3 py-2 text-white/90 hover:bg-blue-600 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-calendar-alt w-5 mr-2 text-center"></i>
-                    <span class="font-medium">RESERVATION</span>
-                </a>
-                <div class="border-t border-white/10 my-2"></div>
-                <a href="../logout.php" class="group px-3 py-2 text-white/90 hover:bg-red-500/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-sign-out-alt w-5 mr-2 text-center"></i>
-                    <span class="font-medium group-hover:translate-x-1 transition-transform">LOG OUT</span>
-                </a>
-            </nav>
+                    <a href="reservation.php" class="nav-item<?php if(basename($_SERVER['PHP_SELF']) == 'reservation.php') echo ' active'; ?>">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Reservation</span>
+                    </a>
+                    <!-- User Profile -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center space-x-2">
+                            <img src="<?php echo htmlspecialchars($profileImage); ?>" alt="Profile" 
+                                 class="w-8 h-8 rounded-full object-cover border-2 border-white/30">
+                            <span class="hidden md:inline-block"><?php echo htmlspecialchars($firstName); ?></span>
+                        </button>
+                        <div x-show="open" 
+                             @click.outside="open = false"
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50">
+                            <a href="../logout.php" class="block px-4 py-2 text-gray-800 hover:bg-red-50">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden" @click="mobileMenu = !mobileMenu">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
         </div>
-    </div>
-
+    </header>
     <!-- Main Content Container -->
     <div class="container mx-auto px-4 py-8">
         <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
@@ -210,24 +258,10 @@ if ($fetchResult && $fetchResult->num_rows > 0) {
                 <i class="fas fa-box-open text-2xl mr-4 relative z-10"></i>
                 <h2 class="text-xl font-bold tracking-wider uppercase relative z-10">Lab Resources Hub</h2>
             </div>
-            
             <div class="p-6">
                 <!-- Modern Futuristic Header -->
-                <div class="flex flex-wrap items-center justify-between mb-8">
-                    <div class="flex items-center">
-                        <div class="relative mr-3">
-                            <div class="absolute inset-0 bg-indigo-600 rounded-lg blur-lg opacity-30"></div>
-                            <div class="relative bg-gradient-to-br from-indigo-600 to-purple-700 p-3 rounded-lg shadow-lg">
-                            </div>
-                        </div>
-                        <div>
-                            <h1 class="text-2xl font-extrabold">
-                                <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-700">
-                                    Resource Hub
-                                </span>
-                            </h1>
-                        </div>
-                    </div>
+                
+                       
                     
                     <div class="flex items-center mt-4 md:mt-0">
                         <!-- Modern Search Field -->
@@ -245,7 +279,6 @@ if ($fetchResult && $fetchResult->num_rows > 0) {
                         </form>
                     </div>
                 </div>
-                
                 <!-- Display resources using card grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                     <?php if (empty($resources)): ?>
@@ -288,7 +321,6 @@ if ($fetchResult && $fetchResult->num_rows > 0) {
                                 <?php if ($cardType === 0): ?>
                                     <div class="card-shine rounded-xl"></div>
                                 <?php endif; ?>
-                                
                                 <div class="h-40 overflow-hidden">
                                     <?php if ($resource['RESOURCES_IMAGE']): ?>
                                         <img src="data:image/jpeg;base64,<?php echo base64_encode($resource['RESOURCES_IMAGE']); ?>" 
@@ -300,10 +332,8 @@ if ($fetchResult && $fetchResult->num_rows > 0) {
                                         </div>
                                     <?php endif; ?>
                                 </div>
-                                
                                 <div class="p-5 bg-white">
                                     <h3 class="font-bold text-gray-800 text-lg mb-1"><?php echo htmlspecialchars($resource['RESOURCES_NAME']); ?></h3>
-                                    
                                     <!-- Display professor name if available -->
                                     <?php if (!empty($resource['PROFESSOR'])): ?>
                                     <div class="text-sm text-gray-500 mb-2">
@@ -311,11 +341,9 @@ if ($fetchResult && $fetchResult->num_rows > 0) {
                                         <?php echo htmlspecialchars($resource['PROFESSOR']); ?>
                                     </div>
                                     <?php endif; ?>
-                                    
                                     <p class="text-gray-600 text-sm mb-4 line-clamp-2 <?php echo $cardType === 3 ? 'floating-label' : ''; ?>">
                                         <?php echo htmlspecialchars($resource['DESCRIPTION']); ?>
                                     </p>
-                                    
                                     <div class="mt-auto flex justify-between items-center">
                                         <span class="text-xs text-gray-500"><?php echo date('M d, Y', strtotime($resource['CREATED_AT'])); ?></span>
                                         <a href="<?php echo htmlspecialchars($resource['RESOURCES_LINK']); ?>" target="_blank" 
@@ -332,38 +360,21 @@ if ($fetchResult && $fetchResult->num_rows > 0) {
             </div>
         </div>
     </div>
-    
-
     <script>
-        function toggleNav(x) {
-            document.getElementById("mySidenav").classList.toggle("-translate-x-0");
-            document.getElementById("mySidenav").classList.toggle("-translate-x-full");
-        }
-
-        function closeNav() {
-            document.getElementById("mySidenav").classList.remove("-translate-x-0");
-            document.getElementById("mySidenav").classList.add("-translate-x-full");
-        }
-        
         // Add 3D card effect similar to admin page
         document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.resource-card-3d');
-            
             cards.forEach(card => {
                 card.addEventListener('mousemove', function(e) {
                     const rect = this.getBoundingClientRect();
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
-                    
                     const centerX = rect.width / 2;
                     const centerY = rect.height / 2;
-                    
                     const angleY = (x - centerX) / 20;
                     const angleX = (centerY - y) / 20;
-                    
                     this.style.transform = `rotateY(${angleY}deg) rotateX(${angleX}deg)`;
                 });
-                
                 card.addEventListener('mouseleave', function() {
                     this.style.transform = 'rotateY(0deg) rotateX(0deg)';
                 });

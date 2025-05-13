@@ -171,164 +171,194 @@ while ($row = $result->fetch_assoc()) {
             margin: 0;
             color: #333;
         }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-item i {
+            width: 1.25rem;
+            text-align: center;
+            margin-right: 0.75rem;
+        }
+
+        /* Header nav items */
+        .nav-item {
+            @apply flex items-center px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-colors;
+        }
+
+        .nav-item.active {
+            @apply bg-white/20;
+        }
+
+        .nav-item i {
+            @apply mr-2;
+        }
+
+        /* Mobile menu styles */
+        @media (max-width: 768px) {
+            .nav-item span {
+                @apply hidden;
+            }
+            
+            .nav-item i {
+                @apply mr-0;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            header .container {
+                @apply px-4;
+            }
+        }
     </style>
 </head>
 <body class="bg- min-h-screen font-poppins">
     <!-- Header -->
-    <div class="text-center text-white font-bold text-2xl py-4 relative shadow-lg">
-        CCS SIT-IN MONITORING SYSTEM
-        <div class="absolute top-4 left-6 cursor-pointer" onclick="toggleNav(this)">
-            <div class="bar1 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-            <div class="bar2 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-            <div class="bar3 w-8 h-1 bg-white my-1 transition-all duration-300"></div>
-        </div>
-        
-        <!-- Notification Bell - Modified to initialize with fetchNotifications() -->
-        <div class="absolute top-4 right-6" x-data="notificationData" x-init="fetchNotifications()">
-            <div class="relative">
-                <button @click="open = !open" class="text-white hover:text-pink-200 transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span x-show="unreadCount > 0" x-text="unreadCount" 
-                          class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    </span>
-                </button>
-                
-                <!-- Dropdown Panel -->
-                <div x-show="open" 
-                     @click.outside="open = false"
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 transform scale-95"
-                     x-transition:enter-end="opacity-100 transform scale-100"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 transform scale-100"
-                     x-transition:leave-end="opacity-0 transform scale-95"
-                     class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl overflow-hidden z-50">
+    <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg py-4 px-6">
+        <div class="container mx-auto flex items-center justify-between">
+            <!-- Logo/Title Section -->
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold">CCS SIT-IN MONITORING SYSTEM</h1>
+            </div>
+
+            <!-- Navigation Items -->
+            <div class="flex items-center space-x-6">
+                <!-- Nav Links -->
+                <nav class="hidden md:flex items-center space-x-4">
+                    <a href="dashboard.php" class="nav-item active">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
                     
-                    <div class="p-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium flex justify-between items-center">
-                        <span>Notifications</span>
-                        <button @click="markAllAsRead()" x-show="unreadCount > 0" class="text-xs bg-white/20 hover:bg-white/30 rounded px-2 py-1">
-                            Mark all as read
+                    <a href="profile.php" class="nav-item">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+
+                    <a href="edit.php" class="nav-item">
+                        <i class="fas fa-edit"></i>
+                        <span>Edit</span>
+                    </a>
+
+                    <a href="history.php" class="nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </a>
+
+                    <!-- View Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="nav-item">
+                            <i class="fas fa-eye"></i>
+                            <span>View</span>
+                            <i class="fas fa-chevron-down ml-1 text-sm"></i>
                         </button>
-                    </div>
-                    
-                    <div class="max-h-[350px] overflow-y-auto">
-                        <template x-if="notifications.length === 0">
-                            <div class="flex flex-col items-center justify-center py-8 px-4 text-gray-500">
-                                <i class="far fa-bell-slash text-3xl mb-2"></i>
-                                <p class="text-center">No notifications yet</p>
-                            </div>
-                        </template>
                         
-                        <template x-for="notification in notifications" :key="notification.NOTIF_ID">
-                            <div @click="readNotification(notification.NOTIF_ID, notification)" 
-                                 :class="{'bg-indigo-50': !notification.IS_READ}" 
-                                 class="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 mr-3">
-                                        <i :class="getNotificationIcon(notification)" class="text-lg mt-1"></i>
+                        <div x-show="open" 
+                             @click.outside="open = false"
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50">
+                            <a href="lab_resources.php" class="block px-4 py-2 text-gray-800 hover:bg-blue-50">
+                                <i class="fas fa-desktop mr-2"></i>Lab Resource
+                            </a>
+                            <a href="lab_schedule.php" class="block px-4 py-2 text-gray-800 hover:bg-blue-50">
+                                <i class="fas fa-calendar-week mr-2"></i>Lab Schedule
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="reservation.php" class="nav-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Reservation</span>
+                    </a>
+
+                    <!-- Notifications -->
+                    <div class="relative" x-data="notificationData" x-init="fetchNotifications">
+                        <button @click="open = !open" class="nav-item relative">
+                            <i class="fas fa-bell"></i>
+                            <span x-show="unreadCount > 0" 
+                                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            </span>
+                        </button>
+
+                        <!-- Notification Dropdown -->
+                        <div x-show="open" 
+                             @click.outside="open = false"
+                             class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl py-2 z-50">
+                            <div class="px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                                <h3 class="text-lg font-semibold text-gray-700">Notifications</h3>
+                                <button @click="markAllAsRead" 
+                                        x-show="unreadCount > 0"
+                                        class="text-sm text-blue-600 hover:text-blue-800">
+                                    Mark all as read
+                                </button>
+                            </div>
+
+                            <div class="max-h-64 overflow-y-auto">
+                                <template x-if="notifications.length === 0">
+                                    <div class="px-4 py-3 text-sm text-gray-500">
+                                        No notifications
                                     </div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium text-gray-900" x-text="getNotificationType(notification)"></p>
-                                        <p class="text-xs text-gray-500 mt-1" x-text="notification.MESSAGE"></p>
-                                        <div class="flex justify-between items-center mt-2">
-                                            <span class="text-xs text-gray-400" x-text="formatDate(notification.CREATED_AT)"></span>
-                                            <span x-show="!notification.IS_READ" class="h-2 w-2 bg-blue-500 rounded-full"></span>
+                                </template>
+
+                                <template x-for="notification in notifications" :key="notification.NOTIF_ID">
+                                    <div @click="readNotification(notification.NOTIF_ID, notification)"
+                                         :class="{'bg-blue-50': !notification.IS_READ}"
+                                         class="px-4 py-3 hover:bg-gray-50 cursor-pointer">
+                                        <div class="flex items-center">
+                                            <i :class="getNotificationIcon(notification)" class="mr-3"></i>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900" x-text="getNotificationType(notification)"></div>
+                                                <div class="text-sm text-gray-600" x-text="notification.MESSAGE"></div>
+                                                <div class="text-xs text-gray-400 mt-1" x-text="formatDate(notification.CREATED_AT)"></div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </template>
                             </div>
-                        </template>
-                    </div>
-                    
-                    <div class="p-2 bg-gray-50 text-center">
-                        <a href="user_notifications.php" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
-                            View all notifications
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Side Navigation -->
-    <div id="mySidenav" class="fixed top-0 left-0 h-screen w-72 transform -translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-xl overflow-y-auto" style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
-        <div class="absolute top-0 right-0 m-3">
-            <button onclick="closeNav()" class="text-white hover:text-pink-200 transition-colors">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        
-        <div class="flex flex-col items-center mt-6">
-            <div class="relative">
-                <img src="<?php echo htmlspecialchars($profileImage); ?>" alt="Profile" class="w-20 h-20 rounded-full border-4 border-white/30 object-cover shadow-lg">
-                <div class="absolute bottom-0 right-0 bg-green-500 w-3 h-3 rounded-full border-2 border-white"></div>
-            </div>
-            <p class="text-white font-semibold text-lg mt-2 mb-0"><?php echo htmlspecialchars($firstName); ?></p>
-            <p class="text-purple-200 text-xs mb-3">Student</p>
-        </div>
-
-        <div class="px-2 py-2">
-            <nav class="flex flex-col space-y-1">
-                <a href="dashboard.php" class="group px-3 py-2 text-white/90 bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-home w-5 mr-2 text-center"></i>
-                    <span class="font-medium">HOME</span>
-                </a>
-                <a href="profile.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-user w-5 mr-2 text-center"></i>
-                    <span class="font-medium">PROFILE</span>
-                </a>
-                <a href="edit.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-edit w-5 mr-2 text-center"></i>
-                    <span class="font-medium">EDIT</span>
-                </a>
-                <a href="history.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-history w-5 mr-2 text-center"></i>
-                    <span class="font-medium">HISTORY</span>
-                </a>
-                
-                <!-- VIEW Dropdown -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="w-full group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="fas fa-eye w-5 mr-2 text-center"></i>
-                            <span class="font-medium">VIEW</span>
                         </div>
-                        <i class="fas fa-chevron-down transition-transform" :class="{ 'transform rotate-180': open }"></i>
-                    </button>
-                    
-                    <div x-show="open" 
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 transform -translate-y-2"
-                        x-transition:enter-end="opacity-100 transform translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 transform translate-y-0"
-                        x-transition:leave-end="opacity-0 transform -translate-y-2"
-                        class="pl-7 mt-2 space-y-1">
-                        
-                        <a href="lab_resources.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-desktop w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Lab Resource</span>
-                        </a>
-                        
-                        <a href="lab_schedule.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-calendar-week w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Lab Schedule</span>
-                        </a>
                     </div>
-                </div>
 
-                <a href="reservation.php" class="group px-3 py-2 text-white/90 hover:bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-calendar-alt w-5 mr-2 text-center"></i>
-                    <span class="font-medium">RESERVATION</span>
-                </a>
-                <div class="border-t border-white/10 my-2"></div>
-                <a href="../logout.php" class="group px-3 py-2 text-white/90 hover:bg-red-500/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="fas fa-sign-out-alt w-5 mr-2 text-center"></i>
-                    <span class="font-medium group-hover:translate-x-1 transition-transform">LOG OUT</span>
-                </a>
-            </nav>
+                    <!-- User Profile -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center space-x-2">
+                            <img src="<?php echo htmlspecialchars($profileImage); ?>" alt="Profile" 
+                                 class="w-8 h-8 rounded-full object-cover border-2 border-white/30">
+                            <span class="hidden md:inline-block"><?php echo htmlspecialchars($firstName); ?></span>
+                        </button>
+                        
+                        <div x-show="open" 
+                             @click.outside="open = false"
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50">
+                            <a href="../logout.php" class="block px-4 py-2 text-gray-800 hover:bg-red-50">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden" @click="mobileMenu = !mobileMenu">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
         </div>
-    </div>
+    </header>
 
     <!-- Main Content Container -->
     <div class="section-container">

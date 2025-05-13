@@ -127,7 +127,7 @@ $yearLevelLabelsJSON = json_encode(array_keys($yearLevelCounts)); // Fixed from 
 // Initialize leaderboard array
 $leaderboardData = [];
 
-// Update the leaderboard query to count actual sit-in sessions
+// Update the leaderboard query to correctly sum points and sessions
 $leaderboardQuery = "
     SELECT 
         u.FIRST_NAME,
@@ -135,11 +135,22 @@ $leaderboardQuery = "
         u.YEAR_LEVEL,
         u.UPLOAD_IMAGE,
         COUNT(c.SITIN_ID) as total_sessions,
+        u.POINTS as current_points,
         u.TOTAL_POINTS as total_points 
     FROM users u
     LEFT JOIN curr_sitin c ON u.IDNO = c.IDNO
-    GROUP BY u.IDNO, u.FIRST_NAME, u.LAST_NAME, u.YEAR_LEVEL, u.UPLOAD_IMAGE, u.TOTAL_POINTS
-    ORDER BY u.TOTAL_POINTS DESC, total_sessions DESC
+    GROUP BY 
+        u.IDNO, 
+        u.FIRST_NAME, 
+        u.LAST_NAME, 
+        u.YEAR_LEVEL, 
+        u.UPLOAD_IMAGE, 
+        u.POINTS,
+        u.TOTAL_POINTS
+    ORDER BY 
+        u.TOTAL_POINTS DESC, 
+        u.POINTS DESC,
+        total_sessions DESC
     LIMIT 5
 ";
 
@@ -228,357 +239,215 @@ if (isset($_SESSION['toast'])) {
         .btn-gradient {
             background: linear-gradient(to bottom right, #2563eb, #3b82f6);
         }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #333;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
     </style>
 </head>
 <body class="min-h-screen font-poppins" style="background: white">
     <!-- Header -->
-    <div class="text-center text-white font-bold text-2xl py-4 relative shadow-lg" style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
-        CCS SIT-IN MONITORING SYSTEM
-        <div class="absolute top-4 left-6 cursor-pointer text-white font-medium" onclick="toggleNav(this)">
-            Menu
-        </div>
-        
-        <!-- Notification Bell - Modified to initialize with fetchNotifications() -->
-        <div class="absolute top-4 right-6" x-data="notificationData" x-init="fetchNotifications()">
-            <div class="relative">
-                <button @click="open = !open" class="text-white hover:text-pink-200 transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span x-show="unreadCount > 0" x-text="unreadCount" 
-                          class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    </span>
-                </button>
-                
-                <!-- Dropdown Panel -->
-                <div x-show="open" 
-                     @click.outside="open = false"
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 transform scale-95"
-                     x-transition:enter-end="opacity-100 transform scale-100"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 transform scale-100"
-                     x-transition:leave-end="opacity-0 transform scale-95"
-                     class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl overflow-hidden z-50">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <!-- Left - System Title with Logo -->
+                <div class="flex items-center space-x-4">
+                    <img src="../logo/ccs.png" alt="Logo" class="w-10 h-10">
+                    <h1 class="font-bold text-xl">CCS SIT-IN MONITORING SYSTEM</h1>
+                </div>
+
+                <!-- Center/Right - Navigation Menu -->
+                <nav class="flex items-center space-x-6">
+                    <a href="admin_dashboard.php" class="nav-item active">
+                        <i class="ri-home-line"></i>
+                        <span>Home</span>
+                    </a>
                     
-                    <div class="p-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium flex justify-between items-center">
-                        <span>Notifications</span>
-                        <button @click="markAllAsRead()" x-show="unreadCount > 0" class="text-xs bg-white/20 hover:bg-white/30 rounded px-2 py-1">
-                            Mark all as read
+                    <a href="admin_search.php" class="nav-item">
+                        <i class="ri-search-line"></i>
+                        <span>Search</span>
+                    </a>
+                    
+                    <a href="admin_sitin.php" class="nav-item">
+                        <i class="ri-user-follow-line"></i>
+                        <span>Sit-in</span>
+                    </a>
+
+                    <!-- View Dropdown -->
+                    <div class="relative group">
+                        <button class="nav-item" onclick="toggleDropdown('viewDropdown')">
+                            <i class="ri-eye-line"></i>
+                            <span>View</span>
+                            <i class="ri-arrow-down-s-line"></i>
                         </button>
+                        <div id="viewDropdown" class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 hidden">
+                            <a href="admin_sitinrec.php" class="dropdown-item">
+                                <i class="ri-file-list-line mr-2"></i>Sit-in Records
+                            </a>
+                            <a href="admin_studlist.php" class="dropdown-item">
+                                <i class="ri-list-check mr-2"></i>List of Students
+                            </a>
+                            <a href="admin_feedback.php" class="dropdown-item">
+                                <i class="ri-message-3-line mr-2"></i>Feedbacks
+                            </a>
+                        </div>
                     </div>
-                    
-                    <div class="max-h-[350px] overflow-y-auto">
-                        <template x-if="notifications.length === 0">
-                            <div class="flex flex-col items-center justify-center py-8 px-4 text-gray-500">
-                                <i class="far fa-bell-slash text-3xl mb-2"></i>
-                                <p class="text-center">No notifications yet</p>
-                            </div>
-                        </template>
+
+                    <!-- Lab Dropdown -->
+                    <div class="relative group">
+                        <button class="nav-item" onclick="toggleDropdown('labDropdown')">
+                            <i class="ri-computer-line"></i>
+                            <span>Lab</span>
+                            <i class="ri-arrow-down-s-line"></i>
+                        </button>
+                        <div id="labDropdown" class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 hidden">
+                            <a href="admin_resources.php" class="dropdown-item">
+                                <i class="fas fa-box-open mr-2"></i>Resources
+                            </a>
+                            <a href="admin_lab_schedule.php" class="dropdown-item">
+                                <i class="fas fa-calendar-alt mr-2"></i>Lab Schedule
+                            </a>
+                            <a href="admin_lab_usage.php" class="dropdown-item">
+                                <i class="fas fa-chart-bar mr-2"></i>Lab Usage Point
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="admin_reports.php" class="nav-item">
+                        <i class="ri-line-chart-line"></i>
+                        <span>Reports</span>
+                    </a>
+
+                    <a href="admin_reservation.php" class="nav-item">
+                        <i class="ri-calendar-check-line"></i>
+                        <span>Reservation</span>
+                    </a>
+
+                    <!-- Notification Bell -->
+                    <div class="relative" x-data="notificationData" x-init="fetchNotifications()">
+                        <button @click="open = !open" class="nav-item">
+                            <i class="fas fa-bell"></i>
+                            <span x-show="unreadCount > 0" 
+                                  x-text="unreadCount"
+                                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            </span>
+                        </button>
                         
-                        <template x-for="notification in notifications" :key="notification.NOTIF_ID">
-                            <div @click="readNotification(notification.NOTIF_ID, notification)" 
-                                 :class="{'bg-indigo-50': !notification.IS_READ}" 
-                                 class="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
-                                <div class="flex items-start">
-                                    <div class="flex-shrink-0 mr-3">
-                                        <i :class="getNotificationIcon(notification)" class="text-lg mt-1"></i>
+                        <!-- Notification Dropdown -->
+                        <div x-show="open" 
+                             @click.outside="open = false"
+                             class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <div class="px-4 py-2 border-b flex justify-between items-center">
+                                <h3 class="font-semibold text-gray-700">Notifications</h3>
+                                <button @click="markAllAsRead" 
+                                        x-show="unreadCount > 0"
+                                        class="text-sm text-blue-600 hover:text-blue-800">
+                                    Mark all as read
+                                </button>
+                            </div>
+                            <div class="max-h-64 overflow-y-auto">
+                                <template x-if="notifications.length === 0">
+                                    <div class="px-4 py-3 text-sm text-gray-500 text-center">
+                                        No notifications
                                     </div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium text-gray-900" x-text="getNotificationType(notification)"></p>
-                                        <p class="text-xs text-gray-500 mt-1" x-text="notification.MESSAGE"></p>
-                                        <div class="flex justify-between items-center mt-2">
-                                            <span class="text-xs text-gray-400" x-text="formatDate(notification.CREATED_AT)"></span>
-                                            <span x-show="!notification.IS_READ" class="h-2 w-2 bg-blue-500 rounded-full"></span>
+                                </template>
+                                <template x-for="notification in notifications" :key="notification.NOTIF_ID">
+                                    <div @click="readNotification(notification.NOTIF_ID, notification)"
+                                         :class="{'bg-blue-50': !notification.IS_READ}"
+                                         class="px-4 py-3 hover:bg-gray-50 cursor-pointer">
+                                        <div class="flex items-start">
+                                            <i :class="getNotificationIcon(notification)" class="mt-1"></i>
+                                            <div class="ml-3">
+                                                <p class="text-sm text-gray-900" x-text="notification.MESSAGE"></p>
+                                                <p class="text-xs text-gray-500 mt-1" x-text="formatDate(notification.CREATED_AT)"></p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </template>
                             </div>
-                        </template>
-                    </div>
-                    
-                    <div class="p-2 bg-gray-50 text-center">
-                        <a href="admin_notifications.php" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
-                            View all notifications
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Side Navigation -->
-    <div id="mySidenav" class="fixed top-0 left-0 h-screen w-72 bg-gradient-to-b from-blue-600 to-blue-800 transform -translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-xl overflow-y-auto">
-        <div class="absolute top-0 right-0 m-3">
-            <button onclick="closeNav()" class="text-white hover:text-pink-200 transition-colors">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        
-        <div class="flex flex-col items-center mt-6">
-            <div class="relative">
-                <img src="../images/image.jpg" alt="Logo" class="w-20 h-20 rounded-full border-4 border-white/30 object-cover shadow-lg">
-                <div class="absolute bottom-0 right-0 bg-green-500 w-3 h-3 rounded-full border-2 border-white"></div>
-            </div>
-            <p class="text-white font-semibold text-lg mt-2 mb-0">Admin</p>
-            <p class="text-purple-200 text-xs mb-3">Administrator</p>
-        </div>
-
-        <div class="px-2 py-2">
-            <nav class="flex flex-col space-y-1">
-                <a href="admin_dashboard.php" class="group px-3 py-2 text-white/90 bg-white/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="ri-home-line w-5 mr-2 text-center"></i>
-                    <span class="font-medium">HOME</span>
-                </a>
-                <a href="admin_search.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="ri-search-line w-5 mr-2 text-center"></i>
-                    <span class="font-medium">SEARCH</span>
-                </a>
-                <a href="admin_sitin.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="ri-user-follow-line w-5 mr-2 text-center"></i>
-                    <span class="font-medium">SIT-IN</span>
-                </a>
-                
-                <!-- VIEW Dropdown -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="w-full group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="ri-eye-line w-5 mr-2 text-center"></i>
-                            <span class="font-medium">VIEW</span>
                         </div>
-                        <i class="ri-arrow-down-s-line transition-transform" :class="{ 'rotate-180': open }"></i>
-                    </button>
-                    
-                    <div x-show="open" 
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 transform -translate-y-2"
-                        x-transition:enter-end="opacity-100 transform translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 transform translate-y-0"
-                        x-transition:leave-end="opacity-0 transform -translate-y-2"
-                        class="pl-7 mt-2 space-y-1">
-                        
-                        <a href="admin_sitinrec.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="ri-file-list-line w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Sit-in Records</span>
-                        </a>
-                        
-                        <a href="admin_studlist.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="ri-list-check w-5 mr-2 text-center"></i>
-                            <span class="font-medium">List of Students</span>
-                        </a>
-                        
-                        <a href="admin_feedback.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="ri-message-3-line w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Feedbacks</span>
-                        </a>
-                        
-                        <a href="#" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-chart-pie w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Daily Analytics</span>
-                        </a>
                     </div>
-                </div>
 
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="w-full group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="ri-computer-line w-5 mr-2 text-center"></i>
-                            <span class="font-medium">LAB</span>
-                        </div>
-                        <i class="ri-arrow-down-s-line transition-transform" :class="{ 'rotate-180': open }"></i>
-                    </button>
-                    
-                    <div x-show="open" 
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 transform -translate-y-2"
-                        x-transition:enter-end="opacity-100 transform translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 transform translate-y-0"
-                        x-transition:leave-end="opacity-0 transform -translate-y-2"
-                        class="pl-7 mt-2 space-y-1">
-                        
-                        <a href="admin_resources.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-box-open w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Resources</span>
-                        </a>
-                        
-                        <a href="admin_lab_schedule.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-calendar-alt w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Lab Schedule</span>
-                        </a>
-                        
-                        <a href="admin_lab_usage.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                            <i class="fas fa-chart-bar w-5 mr-2 text-center"></i>
-                            <span class="font-medium">Lab Usage Point</span>
-                        </a>
-                    </div>
-                </div>
-                <a href="admin_reports.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="ri-line-chart-line w-5 mr-2 text-center"></i>
-                    <span class="font-medium">SIT-IN REPORT</span>
-                </a>
-
-                <a href="admin_reservation.php" class="group px-3 py-2 text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="ri-calendar-check-line w-5 mr-2 text-center"></i>
-                    <span class="font-medium">RESERVATION/APPROVAL</span>
-                </a>
-                
-                <div class="border-t border-white/10 my-2"></div>
-                
-                <a href="../logout.php" class="group px-3 py-2 text-white/90 hover:bg-red-500/20 rounded-lg transition-all duration-200 flex items-center">
-                    <i class="ri-logout-box-r-line w-5 mr-2 text-center"></i>
-                    <span class="font-medium group-hover:translate-x-1 transition-transform">LOG OUT</span>
-                </a>
-            </nav>
+                    <a href="../logout.php" class="nav-item hover:bg-red-500/20">
+                        <i class="ri-logout-box-r-line"></i>
+                        <span>Logout</span>
+                    </a>
+                </nav>
+            </div>
         </div>
     </div>
 
     <!-- Dashboard Content -->
     <div class="px-8 py-8 w-full flex flex-col gap-8">
-        <!-- Top Section with Stats and Leaderboard -->
-        <div class="flex gap-8">
-            <!-- Statistics Section -->
-            <div class="flex-1">
-                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
-                    <!-- Stats Cards Grid -->
-                    <div class="grid grid-cols-3 gap-4 p-6">
-                        <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-4 shadow-lg border border-blue-100/50 transform hover:scale-102 transition-transform duration-300">
-                            <div class="flex flex-col items-center text-center">
-                                <div class="mb-2 bg-blue-500/10 p-2 rounded-full">
-                                    <i class="fas fa-user-graduate text-xl text-blue-600"></i>
-                                </div>
-                                <span class="text-3xl font-bold text-blue-600 mb-1"><?php echo $totalStudents; ?></span>
-                                <span class="text-xs text-blue-600/70 font-medium uppercase tracking-wider">Students Registered</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-gradient-to-br from-purple-50 to-white rounded-xl p-4 shadow-lg border border-purple-100/50 transform hover:scale-102 transition-transform duration-300">
-                            <div class="flex flex-col items-center text-center">
-                                <div class="mb-2 bg-purple-500/10 p-2 rounded-full">
-                                    <i class="fas fa-chair text-xl text-purple-600"></i>
-                                </div>  
-                                <span class="text-3xl font-bold text-purple-600 mb-1"><?php echo $currentSitIns; ?></span>
-                                <span class="text-xs text-purple-600/70 font-medium uppercase tracking-wider">Currently Sit-In</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-gradient-to-br from-green-50 to-white rounded-xl p-4 shadow-lg border border-green-100/50 transform hover:scale-102 transition-transform duration-300">
-                            <div class="flex flex-col items-center text-center">
-                                <div class="mb-2 bg-green-500/10 p-2 rounded-full">
-                                    <i class="fas fa-clipboard-list text-xl text-green-600"></i>
-                                </div>
-                                <span class="text-3xl font-bold text-green-600 mb-1"><?php echo $totalSitIns; ?></span>
-                                <span class="text-xs text-green-600/70 font-medium uppercase tracking-wider">Total Sit-Ins</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Horizontal Leaderboard -->
-            <div class="w-[800px]">
-                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
-                    <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" 
-                         style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
-                        <h2 class="text-xl font-bold tracking-wider uppercase relative z-10">Student Leaderboard</h2>
-                    </div>
-                    
-                    <div class="p-4">
-                        <div class="flex gap-4 overflow-x-auto pb-2">
-                            <?php foreach ($leaderboardData as $index => $student): ?>
-                                <div class="flex-none w-[200px] bg-gradient-to-br <?php 
-                                    switch($index) {
-                                        case 0: echo 'from-yellow-50 to-white border-yellow-200'; break;
-                                        case 1: echo 'from-gray-50 to-white border-gray-200'; break;
-                                        case 2: echo 'from-orange-50 to-white border-orange-200'; break;
-                                        default: echo 'from-purple-50 to-white border-purple-200';
-                                    }
-                                ?> rounded-xl p-4 shadow-lg border transform hover:scale-105 transition-all duration-300">
-                                    <div class="flex flex-col items-center text-center space-y-2">
-                                        <div class="text-2xl mb-1">
-                                            <?php
-                                            switch($index) {
-                                                case 0: echo '🏆'; break;
-                                                case 1: echo '🥈'; break;
-                                                case 2: echo '🥉'; break;
-                                                case 3: echo '🏅'; break;
-                                                case 4: echo '🎖️'; break;
-                                                default: echo ($index + 1);
-                                            }
-                                            ?>
-                                        </div>
-                                        
-                                        <div class="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
-                                            <?php if (!empty($student['UPLOAD_IMAGE'])): ?>
-                                                <img src="../images/<?php echo $student['UPLOAD_IMAGE']; ?>" 
-                                                     alt="<?php echo htmlspecialchars($student['FIRST_NAME']); ?>" 
-                                                     class="w-full h-full object-cover"
-                                                     onerror="this.onerror=null; this.src='../images/image.jpg';">
-                                            <?php else: ?>
-                                                <img src="../images/image.jpg" 
-                                                     alt="Default Profile" 
-                                                     class="w-full h-full object-cover">
-                                            <?php endif; ?>
-                                        </div>
-                                        
-                                        <div class="font-semibold text-gray-800">
-                                            <?php echo htmlspecialchars($student['FIRST_NAME'] . ' ' . $student['LAST_NAME']); ?>
-                                        </div>
-                                        
-                                        <div class="text-sm text-gray-600">
-                                            <?php echo htmlspecialchars($student['YEAR_LEVEL']); ?>
-                                        </div>
-                                        
-                                        <div class="text-sm space-y-2">
-                                            <div class="font-bold text-lg text-indigo-600">
-                                                <?php 
-                                                    echo number_format($student['total_points']) . ' pts';
-                                                ?>
-                                            </div>
-                                            
-                                            <div class="font-medium text-purple-600">
-                                                <i class="fas fa-calendar-check mr-1"></i>
-                                                <?php echo $student['total_sessions']; ?> sit-ins
-                                            </div>
-                                            
-                                            <div class="text-amber-500 font-medium text-xs">
-                                                <?php 
-                                                $totalPoints = $student['total_points'];
-                                                if ($totalPoints >= 100) {
-                                                    echo '⭐⭐⭐ Expert';
-                                                } elseif ($totalPoints >= 5) {
-                                                    echo '⭐⭐ Intermediate';
-                                                } elseif ($totalPoints >= 3) {
-                                                    echo '⭐ Advanced';
-                                                } elseif ($totalPoints >= 1) {
-                                                    echo '📚 Active';
-                                                } else {
-                                                    echo '🌱 New';
-                                                }
-                                                ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Middle Section -->
+        <!-- Middle Section: Year Level Chart and Statistics -->
         <div class="flex gap-8">
             <!-- Year Level Chart -->
             <div class="w-1/2">
-                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
+                <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
+                    <!-- Header -->
                     <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
                         <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                         <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
                         <i class="fas fa-users text-2xl mr-4 relative z-10"></i>
                         <h2 class="text-xl font-bold tracking-wider uppercase relative z-10">Students Year Level</h2>
                     </div>
-                    <div class="p-8">
-                        <div class="h-[400px] bg-white/80 rounded-2xl p-4 shadow-inner">
+                    <!-- Stats Cards Row (moved here) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 px-8 pt-8 pb-4">
+                        <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-4 shadow-lg border border-blue-100/50 flex flex-col items-center text-center">
+                            <div class="mb-2 bg-blue-500/10 p-2 rounded-full">
+                                <i class="fas fa-user-graduate text-xl text-blue-600"></i>
+                            </div>
+                            <span class="text-3xl font-bold text-blue-600 mb-1"><?php echo $totalStudents; ?></span>
+                            <span class="text-xs text-blue-600/70 font-medium uppercase tracking-wider">Students Registered</span>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-50 to-white rounded-xl p-4 shadow-lg border border-purple-100/50 flex flex-col items-center text-center">
+                            <div class="mb-2 bg-purple-500/10 p-2 rounded-full">
+                                <i class="fas fa-chair text-xl text-purple-600"></i>
+                            </div>
+                            <span class="text-3xl font-bold text-purple-600 mb-1"><?php echo $currentSitIns; ?></span>
+                            <span class="text-xs text-purple-600/70 font-medium uppercase tracking-wider">Currently Sit-In</span>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-50 to-white rounded-xl p-4 shadow-lg border border-green-100/50 flex flex-col items-center text-center">
+                            <div class="mb-2 bg-green-500/10 p-2 rounded-full">
+                                <i class="fas fa-clipboard-list text-xl text-green-600"></i>
+                            </div>
+                            <span class="text-3xl font-bold text-green-600 mb-1"><?php echo $totalSitIns; ?></span>
+                            <span class="text-xs text-green-600/70 font-medium uppercase tracking-wider">Total Sit-Ins</span>
+                        </div>
+                    </div>
+                    <!-- Chart -->
+                    <div class="p-8 pt-4">
+                        <div class="h-[400px] bg-white/90 rounded-2xl p-4 shadow-inner border border-blue-100/40">
                             <div id="yearLevelChart" style="width: 100%; height: 350px; margin: 0 auto;"></div>
                         </div>
                     </div>
@@ -603,13 +472,16 @@ if (isset($_SESSION['toast'])) {
             </div>
         </div>
 
-        <!-- Bottom Section -->
+        <!-- Bottom Section: Announcements and Leaderboard -->
         <div class="flex gap-8">
-            <!-- Announcements Section -->
-            <div class="w-full">
+            <!-- Announcements -->
+            <div class="w-1/2">
                 <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
                     <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" 
                          style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                        <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+                        <i class="fas fa-bullhorn text-2xl mr-4 relative z-10"></i>
                         <h2 class="text-xl font-bold tracking-wider uppercase relative z-10">Announcements</h2>
                     </div>
                     <div class="p-8 h-[calc(100%-5rem)] flex flex-col">
@@ -620,10 +492,10 @@ if (isset($_SESSION['toast'])) {
                                     name="new_announcement" 
                                     placeholder="Type your announcement here..." 
                                     required
-                                    class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-y min-h-[120px] shadow-inner bg-white/80"
+                                    class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-y min-h-[100px] shadow-inner bg-white/80"
                                 ></textarea>
                                 <button type="submit" 
-                                    class="bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-xl 
+                                    class="bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2 px-4 rounded-xl 
                                     hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-medium">
                                     Post Announcement
                                 </button>
@@ -632,13 +504,13 @@ if (isset($_SESSION['toast'])) {
 
                         <!-- Announcements List -->
                         <div class="flex-1 overflow-y-auto">
-                            <h3 class="font-bold text-gray-700 mb-4 text-lg">Posted Announcements</h3>
+                            <h3 class="font-bold text-gray-700 mb-4">Posted Announcements</h3>
                             <div class="space-y-4 pr-2">
                                 <?php if (empty($announcements)): ?>
                                     <p class="text-gray-500 text-center py-4">No announcements available.</p>
                                 <?php else: ?>
                                     <?php foreach ($announcements as $announcement): ?>
-                                        <div class="bg-white/80 rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-gradient-purple" 
+                                        <div class="bg-white/80 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-gradient-purple" 
                                              style="border-image: linear-gradient(to bottom, #4A69BB, #CD4DCC) 1;">
                                             <div class="flex items-center text-sm font-bold text-purple-600 mb-3">
                                                 <span><?php echo htmlspecialchars($announcement['CREATED_BY']); ?></span>
@@ -677,6 +549,91 @@ if (isset($_SESSION['toast'])) {
                                 <?php endif; ?>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vertical Leaderboard -->
+            <div class="w-1/2">
+                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
+                    <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" 
+                         style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
+                        <h2 class="text-xl font-bold tracking-wider uppercase relative z-10">Student Leaderboard</h2>
+                    </div>
+                    <div class="p-4 flex flex-col">
+                        <?php foreach ($leaderboardData as $index => $student): ?>
+                            <div class="mb-4 bg-gradient-to-br <?php 
+                                switch($index) {
+                                    case 0: echo 'from-yellow-50 to-white border-yellow-200'; break;
+                                    case 1: echo 'from-gray-50 to-white border-gray-200'; break;
+                                    case 2: echo 'from-orange-50 to-white border-orange-200'; break;
+                                    default: echo 'from-purple-50 to-white border-purple-200';
+                                }
+                            ?> rounded-xl p-4 shadow-lg border transform hover:scale-105 transition-all duration-300">
+                                <div class="flex items-center space-x-4">
+                                    <div class="text-2xl">
+                                        <?php
+                                        switch($index) {
+                                            case 0: echo '🏆'; break;
+                                            case 1: echo '🥈'; break;
+                                            case 2: echo '🥉'; break;
+                                            case 3: echo '🏅'; break;
+                                            case 4: echo '🎖️'; break;
+                                            default: echo ($index + 1);
+                                        }
+                                        ?>
+                                    </div>
+                                    <div class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+                                        <?php if (!empty($student['UPLOAD_IMAGE'])): ?>
+                                            <img src="../images/<?php echo $student['UPLOAD_IMAGE']; ?>" 
+                                                 alt="<?php echo htmlspecialchars($student['FIRST_NAME']); ?>" 
+                                                 class="w-full h-full object-cover"
+                                                 onerror="this.onerror=null; this.src='../images/image.jpg';">
+                                        <?php else: ?>
+                                            <img src="../images/image.jpg" 
+                                                 alt="Default Profile" 
+                                                 class="w-full h-full object-cover">
+                                        <?php endif; ?>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-gray-800">
+                                            <?php echo htmlspecialchars($student['FIRST_NAME'] . ' ' . $student['LAST_NAME']); ?>
+                                        </div>
+                                        <div class="text-sm text-gray-600">
+                                            <?php echo htmlspecialchars($student['YEAR_LEVEL']); ?>
+                                        </div>
+                                        <div class="text-sm space-y-2">
+                                            <div class="font-bold text-lg text-indigo-600">
+                                                <?php 
+                                                    $displayPoints = $student['current_points'] + $student['total_points'];
+                                                    echo number_format($displayPoints) . ' pts';
+                                                ?>
+                                            </div>
+                                            <div class="font-medium text-purple-600">
+                                                <i class="fas fa-calendar-check mr-1"></i>
+                                                <?php echo $student['total_sessions']; ?> sit-ins
+                                            </div>
+                                            <div class="text-amber-500 font-medium text-xs">
+                                                <?php 
+                                                $totalPoints = $student['total_points'];
+                                                if ($totalPoints >= 100) {
+                                                    echo '⭐⭐⭐ Expert';
+                                                } elseif ($totalPoints >= 5) {
+                                                    echo '⭐⭐ Intermediate';
+                                                } elseif ($totalPoints >= 3) {
+                                                    echo '⭐ Advanced';
+                                                } elseif ($totalPoints >= 1) {
+                                                    echo '📚 Active';
+                                                } else {
+                                                    echo '🌱 New';
+                                                }
+                                                ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
@@ -1156,6 +1113,11 @@ if (isset($_SESSION['toast'])) {
                     background: '#EF4444'
                 });
             });
+        }
+
+        function toggleDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            dropdown.classList.toggle('hidden');
         }
     </script>
 </body>
