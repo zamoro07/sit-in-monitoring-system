@@ -215,7 +215,6 @@ if (!$result) {
                  style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                 <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-                <i class="fas fa-chart-bar text-2xl mr-4 relative z-10"></i>
                 <h2 class="text-xl font-bold tracking-wider uppercase relative z-10">Student Points</h2>
             </div>
             

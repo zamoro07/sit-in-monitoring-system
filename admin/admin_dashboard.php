@@ -424,23 +424,14 @@ if (isset($_SESSION['toast'])) {
                     <!-- Stats Cards Row (moved here) -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 px-8 pt-8 pb-4">
                         <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-4 shadow-lg border border-blue-100/50 flex flex-col items-center text-center">
-                            <div class="mb-2 bg-blue-500/10 p-2 rounded-full">
-                                <i class="fas fa-user-graduate text-xl text-blue-600"></i>
-                            </div>
                             <span class="text-3xl font-bold text-blue-600 mb-1"><?php echo $totalStudents; ?></span>
                             <span class="text-xs text-blue-600/70 font-medium uppercase tracking-wider">Students Registered</span>
                         </div>
                         <div class="bg-gradient-to-br from-purple-50 to-white rounded-xl p-4 shadow-lg border border-purple-100/50 flex flex-col items-center text-center">
-                            <div class="mb-2 bg-purple-500/10 p-2 rounded-full">
-                                <i class="fas fa-chair text-xl text-purple-600"></i>
-                            </div>
                             <span class="text-3xl font-bold text-purple-600 mb-1"><?php echo $currentSitIns; ?></span>
                             <span class="text-xs text-purple-600/70 font-medium uppercase tracking-wider">Currently Sit-In</span>
                         </div>
                         <div class="bg-gradient-to-br from-green-50 to-white rounded-xl p-4 shadow-lg border border-green-100/50 flex flex-col items-center text-center">
-                            <div class="mb-2 bg-green-500/10 p-2 rounded-full">
-                                <i class="fas fa-clipboard-list text-xl text-green-600"></i>
-                            </div>
                             <span class="text-3xl font-bold text-green-600 mb-1"><?php echo $totalSitIns; ?></span>
                             <span class="text-xs text-green-600/70 font-medium uppercase tracking-wider">Total Sit-Ins</span>
                         </div>
@@ -476,7 +467,7 @@ if (isset($_SESSION['toast'])) {
         <div class="flex gap-8">
             <!-- Announcements -->
             <div class="w-1/2">
-                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
+                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30 h-full min-h-[700px] flex flex-col">
                     <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" 
                          style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
                         <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
@@ -553,87 +544,135 @@ if (isset($_SESSION['toast'])) {
                 </div>
             </div>
 
-            <!-- Vertical Leaderboard -->
-            <div class="w-1/2">
-                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
-                    <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" 
+            <!-- Redesigned Podium Leaderboard -->
+            <div class="w-1/2 flex items-center justify-center">
+                <div class="w-full bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30 h-full min-h-[700px] flex flex-col">
+                    <div class="text-white p-4 flex items-center justify-center relative overflow-hidden w-full"
                          style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)">
                         <h2 class="text-xl font-bold tracking-wider uppercase relative z-10">Student Leaderboard</h2>
                     </div>
-                    <div class="p-4 flex flex-col">
-                        <?php foreach ($leaderboardData as $index => $student): ?>
-                            <div class="mb-4 bg-gradient-to-br <?php 
-                                switch($index) {
-                                    case 0: echo 'from-yellow-50 to-white border-yellow-200'; break;
-                                    case 1: echo 'from-gray-50 to-white border-gray-200'; break;
-                                    case 2: echo 'from-orange-50 to-white border-orange-200'; break;
-                                    default: echo 'from-purple-50 to-white border-purple-200';
-                                }
-                            ?> rounded-xl p-4 shadow-lg border transform hover:scale-105 transition-all duration-300">
-                                <div class="flex items-center space-x-4">
-                                    <div class="text-2xl">
-                                        <?php
-                                        switch($index) {
-                                            case 0: echo '🏆'; break;
-                                            case 1: echo '🥈'; break;
-                                            case 2: echo '🥉'; break;
-                                            case 3: echo '🏅'; break;
-                                            case 4: echo '🎖️'; break;
-                                            default: echo ($index + 1);
-                                        }
-                                        ?>
-                                    </div>
-                                    <div class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
-                                        <?php if (!empty($student['UPLOAD_IMAGE'])): ?>
-                                            <img src="../images/<?php echo $student['UPLOAD_IMAGE']; ?>" 
-                                                 alt="<?php echo htmlspecialchars($student['FIRST_NAME']); ?>" 
-                                                 class="w-full h-full object-cover"
-                                                 onerror="this.onerror=null; this.src='../images/image.jpg';">
-                                        <?php else: ?>
-                                            <img src="../images/image.jpg" 
-                                                 alt="Default Profile" 
-                                                 class="w-full h-full object-cover">
+                    <div class="w-full flex flex-col items-center py-8 flex-1">
+                        <?php
+                        // Prepare top 3 for podium, rest for below
+                        $podium = array_slice($leaderboardData, 0, 3);
+                        $others = array_slice($leaderboardData, 3);
+                        // Podium order: 2nd, 1st, 3rd for visual
+                        $podiumOrder = [1, 0, 2];
+                        $rankLabels = [1 => '2nd', 2 => '1st', 3 => '3rd'];
+                        $rankColors = [
+                            1 => 'bg-[#f3f4f6] border-yellow-300',
+                            2 => 'bg-[#fef9c3] border-yellow-400',
+                            3 => 'bg-[#fef3c7] border-orange-300'
+                        ];
+                        $levelColors = [
+                            1 => 'bg-gray-200 text-gray-700',
+                            2 => 'bg-yellow-200 text-yellow-700',
+                            3 => 'bg-orange-200 text-orange-700'
+                        ];
+                        $height = [1 => 'h-44', 0 => 'h-56', 2 => 'h-36']; // 2nd, 1st, 3rd
+                        ?>
+                        <div class="flex justify-center items-end w-full gap-8 mb-8">
+                            <?php foreach ($podiumOrder as $i => $podiumIdx): ?>
+                                <?php if (isset($podium[$podiumIdx])): 
+                                    $student = $podium[$podiumIdx];
+                                    $rank = $i + 1;
+                                    $isFirst = $rank === 2;
+                                    $levelLabel = "Lv " . (9 - $podiumIdx);
+                                ?>
+                                <div class="flex flex-col items-center w-1/3">
+                                    <div class="relative flex flex-col items-center">
+                                        <?php if ($isFirst): ?>
+                                            <div class="absolute -top-10 left-1/2 -translate-x-1/2 z-20">
+                                                <span class="text-4xl">👑</span>
+                                            </div>
                                         <?php endif; ?>
+                                        <div class="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden mb-2 bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+                                            <?php if (!empty($student['UPLOAD_IMAGE'])): ?>
+                                                <img src="../images/<?php echo $student['UPLOAD_IMAGE']; ?>"
+                                                     alt="<?php echo htmlspecialchars($student['FIRST_NAME']); ?>"
+                                                     class="w-full h-full object-cover"
+                                                     onerror="this.onerror=null; this.src='../images/image.jpg';">
+                                            <?php else: ?>
+                                                <img src="../images/image.jpg"
+                                                     alt="Default Profile"
+                                                     class="w-full h-full object-cover">
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="font-semibold text-gray-800 text-base">
+                                                <?php echo htmlspecialchars(strtolower($student['FIRST_NAME'] . ' ' . $student['LAST_NAME'])); ?>
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                <?php echo htmlspecialchars($student['YEAR_LEVEL']); ?>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div class="font-semibold text-gray-800">
-                                            <?php echo htmlspecialchars($student['FIRST_NAME'] . ' ' . $student['LAST_NAME']); ?>
+                                    <div class="flex flex-col items-center mt-2">
+                                        <div class="flex items-center gap-1 text-yellow-500 font-bold text-lg">
+                                            <i class="ri-star-fill"></i>
+                                            <?php echo $student['current_points'] + $student['total_points']; ?>
                                         </div>
-                                        <div class="text-sm text-gray-600">
-                                            <?php echo htmlspecialchars($student['YEAR_LEVEL']); ?>
+                                        <div class="flex items-center gap-1 text-xs mt-1">
+                                            <span class="<?php echo $levelColors[$rank]; ?> px-2 py-0.5 rounded-full font-semibold shadow"><?php echo $levelLabel; ?></span>
                                         </div>
-                                        <div class="text-sm space-y-2">
-                                            <div class="font-bold text-lg text-indigo-600">
-                                                <?php 
-                                                    $displayPoints = $student['current_points'] + $student['total_points'];
-                                                    echo number_format($displayPoints) . ' pts';
-                                                ?>
+                                    </div>
+                                    <div class="w-full flex justify-center relative">
+                                        <div class="rounded-t-xl border-t-4 <?php echo $height[$podiumIdx]; ?> w-20 flex flex-col items-center justify-end relative z-0 mt-2 shadow-lg bg-white">
+                                            <!-- Place the rank label INSIDE the box, at the top center -->
+                                            <div class="absolute top-2 left-1/2 -translate-x-1/2 z-10">
+                                                <span class="text-base font-bold text-gray-400 select-none pointer-events-none opacity-80 drop-shadow">
+                                                    <?php
+                                                        // Show 1st, 2nd, 3rd label
+                                                        if ($rank == 2) echo "1st";
+                                                        elseif ($rank == 1) echo "2nd";
+                                                        else echo "3rd";
+                                                    ?>
+                                                </span>
                                             </div>
-                                            <div class="font-medium text-purple-600">
-                                                <i class="fas fa-calendar-check mr-1"></i>
-                                                <?php echo $student['total_sessions']; ?> sit-ins
-                                            </div>
-                                            <div class="text-amber-500 font-medium text-xs">
-                                                <?php 
-                                                $totalPoints = $student['total_points'];
-                                                if ($totalPoints >= 100) {
-                                                    echo '⭐⭐⭐ Expert';
-                                                } elseif ($totalPoints >= 5) {
-                                                    echo '⭐⭐ Intermediate';
-                                                } elseif ($totalPoints >= 3) {
-                                                    echo '⭐ Advanced';
-                                                } elseif ($totalPoints >= 1) {
-                                                    echo '📚 Active';
-                                                } else {
-                                                    echo '🌱 New';
-                                                }
-                                                ?>
+                                            <div class="flex-1"></div>
+                                            <div class="text-2xl font-bold text-gray-300 mb-2">
+                                                <i class="ri-trophy-line"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                        <!-- Others (4th, 5th, ...) -->
+                        <?php if (count($others) > 0): ?>
+                            <div class="w-full flex flex-col items-center gap-2">
+                                <?php foreach ($others as $idx => $student): ?>
+                                    <div class="flex items-center gap-4 w-3/4 bg-blue-50 border border-blue-100 rounded-lg px-4 py-2 shadow">
+                                        <div class="text-lg font-bold text-blue-400"><?php echo $idx + 4; ?></div>
+                                        <div class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+                                            <?php if (!empty($student['UPLOAD_IMAGE'])): ?>
+                                                <img src="../images/<?php echo $student['UPLOAD_IMAGE']; ?>"
+                                                     alt="<?php echo htmlspecialchars($student['FIRST_NAME']); ?>"
+                                                     class="w-full h-full object-cover"
+                                                     onerror="this.onerror=null; this.src='../images/image.jpg';">
+                                            <?php else: ?>
+                                                <img src="../images/image.jpg"
+                                                     alt="Default Profile"
+                                                     class="w-full h-full object-cover">
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-semibold text-gray-800">
+                                                <?php echo htmlspecialchars(strtolower($student['FIRST_NAME'] . ' ' . $student['LAST_NAME'])); ?>
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                <?php echo htmlspecialchars($student['YEAR_LEVEL']); ?>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-1 text-yellow-500 font-bold">
+                                            <i class="ri-star-fill"></i>
+                                            <?php echo $student['current_points'] + $student['total_points']; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
-                        <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

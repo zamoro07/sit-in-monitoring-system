@@ -286,7 +286,7 @@ if (isset($_SESSION['toast'])) {
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <title>Reservation/Approval</title>
+    <title>Reservation Approval</title>
     <script>
         tailwind.config = {
             theme: {
@@ -481,6 +481,13 @@ if (isset($_SESSION['toast'])) {
                     <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" 
                          style="background: linear-gradient(135deg, #4066E0 0%, #4D6AFF 100%)">
                         <h2 class="text-xl font-bold tracking-wider uppercase">Reservation Request</h2>
+                        <button 
+                            x-data 
+                            @click="$dispatch('open-logs-modal')" 
+                            class="absolute right-4 bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center gap-2"
+                        >
+                            <i class="ri-file-list-line"></i> View Logs
+                        </button>
                     </div>
                     <div class="p-6">
                         <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
@@ -552,43 +559,62 @@ if (isset($_SESSION['toast'])) {
                 </div>
             </div>
             <div class="w-full">
-                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30">
-                    <div class="text-white p-4 flex items-center justify-center relative overflow-hidden" 
-                         style="background: linear-gradient(135deg, #4066E0 0%, #4D6AFF 100%)">
-                        <h2 class="text-xl font-bold tracking-wider uppercase">Logs</h2>
-                    </div>
-                    <div class="p-6">
-                        <div class="overflow-y-auto max-h-[600px] bg-white/80 rounded-xl shadow-inner">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50/50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200 bg-white/50">
-                                    <?php while($log = $logs->fetch_assoc()): ?>
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900"><?php echo htmlspecialchars($log['IDNO']); ?> - <?php echo htmlspecialchars($log['FULL_NAME']); ?></div>
-                                                <div class="text-xs text-gray-500">
-                                                    <?php echo date('M d, Y', strtotime($log['DATE'])); ?> - 
-                                                    Lab <?php echo htmlspecialchars($log['LABORATORY']); ?> - 
-                                                    PC <?php echo htmlspecialchars($log['PC_NUM']); ?>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="px-2 py-1 text-xs font-medium rounded-full 
-                                                    <?php echo $log['STATUS'] === 'Approved' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'; ?>">
-                                                    <?php echo htmlspecialchars($log['STATUS']); ?>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                <div class="flex justify-between items-end">
+                    <!-- Removing the old View Logs button placement -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Logs Modal (hidden by default, shown on button click) -->
+    <div 
+        x-data="{ open: false }"
+        x-on:open-logs-modal.window="open = true"
+        x-show="open"
+        style="display: none;"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    >
+        <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/30 w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div class="text-white p-4 flex items-center justify-between relative overflow-hidden"
+                 style="background: linear-gradient(135deg, #4066E0 0%, #4D6AFF 100%)">
+                <h2 class="text-xl font-bold tracking-wider uppercase">Logs</h2>
+                <button @click="open = false" class="text-white text-2xl hover:text-gray-200 transition">
+                    &times;
+                </button>
+            </div>
+            <div class="p-6 flex-1 overflow-y-auto">
+                <div class="overflow-y-auto max-h-[60vh] bg-white/80 rounded-xl shadow-inner">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50/50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white/50">
+                            <?php
+                            // Re-run the logs query here to ensure logs are available in the modal
+                            $logsQuery = "SELECT * FROM reservation_logs ORDER BY ACTION_DATE DESC LIMIT 10";
+                            $logsModal = $conn->query($logsQuery);
+                            while($log = $logsModal->fetch_assoc()): ?>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900"><?php echo htmlspecialchars($log['IDNO']); ?> - <?php echo htmlspecialchars($log['FULL_NAME']); ?></div>
+                                        <div class="text-xs text-gray-500">
+                                            <?php echo date('M d, Y', strtotime($log['DATE'])); ?> - 
+                                            Lab <?php echo htmlspecialchars($log['LABORATORY']); ?> - 
+                                            PC <?php echo htmlspecialchars($log['PC_NUM']); ?>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full 
+                                            <?php echo $log['STATUS'] === 'Approved' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'; ?>">
+                                            <?php echo htmlspecialchars($log['STATUS']); ?>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
